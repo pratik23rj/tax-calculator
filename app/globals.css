@@ -1,0 +1,144 @@
+@import "@fontsource/inter/latin.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #020617;
+  --foreground: #e2e8f0;
+  --muted: #94a3b8;
+  --border: rgba(148, 163, 184, 0.16);
+  --panel: rgba(15, 23, 42, 0.72);
+  --panel-strong: rgba(15, 23, 42, 0.94);
+  --ring: rgba(37, 99, 235, 0.45);
+  --primary: #2563eb;
+  --primary-soft: rgba(37, 99, 235, 0.14);
+  --success: #14b8a6;
+  --danger: #f97316;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.22), transparent 32%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 24%),
+    linear-gradient(180deg, #020617 0%, #081226 42%, #020617 100%);
+  color: var(--foreground);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 120px 120px;
+  content: "";
+  mask-image: radial-gradient(circle at center, black 48%, transparent 90%);
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.35);
+}
+
+.panel {
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.72));
+  backdrop-filter: blur(20px);
+}
+
+.mesh-border {
+  position: relative;
+}
+
+.mesh-border::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.42), rgba(148, 163, 184, 0.08));
+  content: "";
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.21, 1, 0.32, 1) both;
+}
+
+.chart-reveal {
+  animation: chart-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.sheen {
+  overflow: hidden;
+}
+
+.sheen::after {
+  position: absolute;
+  inset: -160% auto auto -30%;
+  width: 38%;
+  height: 280%;
+  transform: rotate(18deg);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0)
+  );
+  content: "";
+  animation: sweep 8s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chart-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sweep {
+  0%,
+  100% {
+    transform: translateX(-16%) rotate(18deg);
+    opacity: 0;
+  }
+
+  30%,
+  70% {
+    transform: translateX(280%) rotate(18deg);
+    opacity: 1;
+  }
+}
