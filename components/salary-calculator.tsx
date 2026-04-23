@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { calculateSalaryBreakdown, type TaxRegime } from "@/lib/tax";
 
@@ -55,10 +55,12 @@ function describeArc(startAngle: number, endAngle: number) {
 
 function SalaryDonut({
   monthlyGross,
-  items
+  items,
+  isLight
 }: {
   monthlyGross: number;
   items: Array<{ label: string; value: number; color: string }>;
+  isLight: boolean;
 }) {
   const segments = items.reduce<
     Array<{ label: string; color: string; startAngle: number; endAngle: number }>
@@ -90,7 +92,7 @@ function SalaryDonut({
           cy="60"
           r="46"
           fill="none"
-          stroke="rgba(148, 163, 184, 0.12)"
+          stroke={isLight ? "rgba(37, 99, 235, 0.12)" : "rgba(148, 163, 184, 0.12)"}
           strokeWidth="12"
         />
         {segments.map((item) => {
@@ -106,12 +108,10 @@ function SalaryDonut({
           );
         })}
       </svg>
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-xs uppercase tracking-[0.35em] text-slate-400">Monthly gross</span>
-        <span className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
+        <span className="theme-heading text-2xl font-semibold sm:text-3xl">
           {formatCurrency(monthlyGross)}
         </span>
-        <span className="mt-2 text-sm text-slate-400">Basic + HRA + other allowance</span>
       </div>
     </div>
   );
@@ -122,22 +122,24 @@ function AmountField({
   label,
   value,
   onChange,
-  hint
+  hint,
+  isLight
 }: {
   id: string;
   label: string;
   value: number;
   onChange: (value: number) => void;
   hint: string;
+  isLight: boolean;
 }) {
   return (
     <label htmlFor={id} className="space-y-3">
       <div className="flex items-center justify-between gap-4">
-        <span className="text-sm font-medium text-slate-100">{label}</span>
-        <span className="text-xs text-slate-400">{hint}</span>
+        <span className="theme-heading text-sm font-medium">{label}</span>
+        <span className="theme-muted text-xs">{hint}</span>
       </div>
-      <div className="group flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 transition duration-300 focus-within:border-blue-500/60 focus-within:bg-white/8">
-        <span className="text-sm font-medium text-slate-400">INR</span>
+      <div className="theme-input-shell group flex items-center rounded-2xl px-4 transition duration-300">
+        <span className="theme-muted text-sm font-medium">INR</span>
         <input
           id={id}
           type="number"
@@ -145,7 +147,9 @@ function AmountField({
           step="1000"
           value={value}
           onChange={(event) => onChange(clampNumber(event.target.value))}
-          className="w-full bg-transparent px-3 py-4 text-right text-lg font-semibold text-white outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className={`w-full bg-transparent px-3 py-4 text-right text-lg font-semibold outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+            isLight ? "text-slate-950" : "text-white"
+          }`}
         />
       </div>
     </label>
@@ -155,16 +159,24 @@ function AmountField({
 function MetricTile({
   label,
   value,
-  accent
+  accent,
+  isLight
 }: {
   label: string;
   value: string;
   accent?: string;
+  isLight: boolean;
 }) {
   return (
-    <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
-      <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{label}</p>
-      <p className={`mt-3 text-2xl font-semibold ${accent ?? "text-white"}`}>{value}</p>
+    <div className="theme-soft-surface rounded-[1.6rem] p-5">
+      <p className="theme-muted text-xs uppercase tracking-[0.28em]">{label}</p>
+      <p
+        className={`mt-3 text-2xl font-semibold ${accent ?? ""} ${
+          !accent ? (isLight ? "text-slate-950" : "text-white") : ""
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -174,13 +186,15 @@ function ComparisonBar({
   value,
   maxValue,
   color,
-  subtitle
+  subtitle,
+  isLight
 }: {
   label: string;
   value: number;
   maxValue: number;
   color: string;
   subtitle: string;
+  isLight: boolean;
 }) {
   const width = maxValue > 0 ? `${Math.max((value / maxValue) * 100, 10)}%` : "10%";
 
@@ -188,12 +202,19 @@ function ComparisonBar({
     <div className="space-y-3">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-slate-100">{label}</p>
-          <p className="text-xs text-slate-400">{subtitle}</p>
+          <p className={`text-sm font-medium ${isLight ? "text-slate-950" : "text-slate-100"}`}>
+            {label}
+          </p>
+          <p className="theme-muted text-xs">{subtitle}</p>
         </div>
-        <p className="text-sm font-semibold text-white">{formatCurrency(value)}</p>
+        <p className={`text-sm font-semibold ${isLight ? "text-slate-950" : "text-white"}`}>
+          {formatCurrency(value)}
+        </p>
       </div>
-      <div className="h-3 rounded-full bg-white/6">
+      <div
+        className="h-3 rounded-full"
+        style={{ background: isLight ? "rgba(37, 99, 235, 0.1)" : "rgba(255, 255, 255, 0.06)" }}
+      >
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
           style={{
@@ -213,7 +234,8 @@ function RegimeCard({
   effectiveRate,
   selected,
   isBest,
-  accent
+  accent,
+  isLight
 }: {
   name: string;
   tax: number;
@@ -222,17 +244,24 @@ function RegimeCard({
   selected: boolean;
   isBest: boolean;
   accent: string;
+  isLight: boolean;
 }) {
   return (
     <div
       className={`mesh-border rounded-[1.8rem] p-5 transition duration-300 ${
-        selected ? "bg-white/[0.08]" : "bg-white/[0.03]"
+        selected ? "theme-soft-surface-strong" : "theme-soft-surface"
       }`}
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-300">{name}</p>
-          <p className="mt-2 text-xs text-slate-400">Estimated annual tax outflow</p>
+          <p
+            className={`text-sm font-semibold uppercase tracking-[0.28em] ${
+              isLight ? "text-slate-700" : "text-slate-300"
+            }`}
+          >
+            {name}
+          </p>
+          <p className="theme-muted mt-2 text-xs">Estimated annual tax outflow</p>
         </div>
         {isBest ? (
           <span className="rounded-full border border-emerald-400/30 bg-emerald-400/12 px-3 py-1 text-xs font-medium text-emerald-200">
@@ -240,15 +269,19 @@ function RegimeCard({
           </span>
         ) : null}
       </div>
-      <p className="mt-6 text-3xl font-semibold text-white">{formatCurrency(tax)}</p>
-      <div className="mt-6 h-px bg-white/10" />
+      <p className={`mt-6 text-3xl font-semibold ${isLight ? "text-slate-950" : "text-white"}`}>
+        {formatCurrency(tax)}
+      </p>
+      <div className="theme-divider mt-6 h-px" />
       <div className="mt-5 flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Monthly in-hand</p>
-          <p className="mt-2 text-xl font-semibold text-white">{formatCurrency(inHand)}</p>
+          <p className="theme-muted text-xs uppercase tracking-[0.24em]">Monthly in-hand</p>
+          <p className={`mt-2 text-xl font-semibold ${isLight ? "text-slate-950" : "text-white"}`}>
+            {formatCurrency(inHand)}
+          </p>
         </div>
         <div className="text-right">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Effective rate</p>
+          <p className="theme-muted text-xs uppercase tracking-[0.24em]">Effective rate</p>
           <p className="mt-2 text-lg font-semibold" style={{ color: accent }}>
             {formatPercent(effectiveRate)}
           </p>
@@ -263,6 +296,30 @@ export function SalaryCalculator() {
   const [hra, setHra] = useState(24_000);
   const [otherAllowance, setOtherAllowance] = useState(14_000);
   const [selectedRegime, setSelectedRegime] = useState<TaxRegime>("new");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof document !== "undefined") {
+      const currentTheme = document.documentElement.dataset.theme;
+
+      if (currentTheme === "light" || currentTheme === "dark") {
+        return currentTheme;
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      const savedTheme = window.localStorage.getItem("tax-theme");
+
+      if (savedTheme === "light" || savedTheme === "dark") {
+        return savedTheme;
+      }
+    }
+
+    return "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("tax-theme", theme);
+  }, [theme]);
 
   const breakdown = calculateSalaryBreakdown({
     basicSalary,
@@ -279,6 +336,7 @@ export function SalaryCalculator() {
     { label: "HRA", value: hra, color: compositionPalette[1] },
     { label: "Other allowance", value: otherAllowance, color: compositionPalette[2] }
   ];
+  const isLight = theme === "light";
 
   return (
     <main className="mx-auto min-h-screen max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
@@ -290,16 +348,33 @@ export function SalaryCalculator() {
                 <p className="text-xs uppercase tracking-[0.36em] text-blue-200/80">
                   In-hand salary
                 </p>
-                <h1 className="mt-3 max-w-sm text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                <h1 className="theme-heading mt-3 max-w-sm text-3xl font-semibold tracking-tight sm:text-4xl">
                   Compare India&apos;s old and new tax regimes in one workspace.
                 </h1>
               </div>
-              <div className="hidden rounded-full border border-blue-400/20 bg-blue-500/12 px-3 py-2 text-xs font-medium text-blue-100 sm:block">
-                AY 2026-27
-              </div>
+              <button
+                type="button"
+                onClick={() => setTheme(isLight ? "dark" : "light")}
+                aria-label={`Switch to ${isLight ? "dark" : "light"} mode`}
+                aria-pressed={isLight}
+                className="theme-toggle hidden rounded-full px-3 py-2 text-xs font-medium sm:flex sm:items-center sm:gap-3"
+              >
+                <span>{isLight ? "Light" : "Dark"} mode</span>
+                <span
+                  className={`flex h-6 w-11 items-center rounded-full p-1 transition ${
+                    isLight ? "bg-blue-600" : "bg-slate-700"
+                  }`}
+                >
+                  <span
+                    className={`h-4 w-4 rounded-full bg-white transition ${
+                      isLight ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </span>
+              </button>
             </div>
 
-            <p className="mt-5 max-w-md text-sm leading-6 text-slate-300">
+            <p className="theme-copy mt-5 max-w-md text-sm leading-6">
               Enter monthly salary components and instantly see annual tax, take-home pay, and
               which regime leaves more money with you.
             </p>
@@ -311,20 +386,42 @@ export function SalaryCalculator() {
                 value={basicSalary}
                 onChange={setBasicSalary}
                 hint="Per month"
+                isLight={isLight}
               />
-              <AmountField id="hra" label="HRA" value={hra} onChange={setHra} hint="Per month" />
+              <AmountField
+                id="hra"
+                label="HRA"
+                value={hra}
+                onChange={setHra}
+                hint="Per month"
+                isLight={isLight}
+              />
               <AmountField
                 id="otherAllowance"
                 label="Other allowance"
                 value={otherAllowance}
                 onChange={setOtherAllowance}
                 hint="Per month"
+                isLight={isLight}
               />
             </div>
 
             <div className="mt-7 space-y-3">
-              <p className="text-sm font-medium text-slate-100">Highlight a regime</p>
-              <div className="grid grid-cols-2 gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-2">
+              <div className="flex items-center justify-between gap-4">
+                <p className={`text-sm font-medium ${isLight ? "text-slate-950" : "text-slate-100"}`}>
+                  Highlight a regime
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setTheme(isLight ? "dark" : "light")}
+                  aria-label={`Switch to ${isLight ? "dark" : "light"} mode`}
+                  aria-pressed={isLight}
+                  className="theme-toggle flex rounded-full px-3 py-2 text-xs font-medium sm:hidden"
+                >
+                  {isLight ? "Light mode" : "Dark mode"}
+                </button>
+              </div>
+              <div className="theme-soft-surface grid grid-cols-2 gap-3 rounded-[1.4rem] p-2">
                 {(["old", "new"] as TaxRegime[]).map((regime) => {
                   const active = selectedRegime === regime;
 
@@ -336,7 +433,7 @@ export function SalaryCalculator() {
                       className={`rounded-[1rem] px-4 py-3 text-sm font-semibold capitalize transition ${
                         active
                           ? "bg-blue-600 text-white shadow-[0_12px_36px_rgba(37,99,235,0.35)]"
-                          : "text-slate-300 hover:bg-white/[0.04]"
+                          : `${isLight ? "text-slate-700 hover:bg-blue-50" : "text-slate-300 hover:bg-white/[0.04]"}`
                       }`}
                     >
                       {regime} regime
@@ -356,7 +453,7 @@ export function SalaryCalculator() {
               </p>
             </div>
 
-            <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-slate-300">
+            <div className="theme-soft-surface mt-6 rounded-[1.5rem] p-4 text-sm leading-6">
               This estimator includes standard deduction and current slab/rebate rules. HRA is
               counted as salary income here and HRA exemption is not subtracted because rent and
               city details are not collected.
@@ -368,14 +465,14 @@ export function SalaryCalculator() {
           <div className="fade-up panel rounded-[2rem] p-6 sm:p-7" style={{ animationDelay: "120ms" }}>
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.34em] text-slate-400">Summary</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+                <p className="theme-muted text-xs uppercase tracking-[0.34em]">Summary</p>
+                <h2 className="theme-heading mt-3 text-2xl font-semibold sm:text-3xl">
                   {breakdown.bestRegime === "new" ? "New regime" : "Old regime"} is currently more
                   efficient.
                 </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                <p className="theme-copy mt-3 max-w-2xl text-sm leading-6">
                   Based on your current monthly structure, the better option saves{" "}
-                  <span className="font-semibold text-white">
+                  <span className={`font-semibold ${isLight ? "text-slate-950" : "text-white"}`}>
                     {formatCurrency(breakdown.annualSavings)}
                   </span>{" "}
                   each year, or {formatCurrency(breakdown.monthlySavings)} per month.
@@ -383,11 +480,16 @@ export function SalaryCalculator() {
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:min-w-[360px]">
-                <MetricTile label="Annual gross" value={formatCurrency(breakdown.annualGross)} />
+                <MetricTile
+                  label="Annual gross"
+                  value={formatCurrency(breakdown.annualGross)}
+                  isLight={isLight}
+                />
                 <MetricTile
                   label="Taxable income"
                   value={formatCurrency(selectedResult.taxableIncome)}
                   accent="text-blue-300"
+                  isLight={isLight}
                 />
               </div>
             </div>
@@ -397,18 +499,20 @@ export function SalaryCalculator() {
             <div className="fade-up panel rounded-[2rem] p-6 sm:p-7" style={{ animationDelay: "180ms" }}>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.34em] text-slate-400">
-                    Salary composition
-                  </p>
-                  <h3 className="mt-3 text-xl font-semibold text-white">Gross income mix</h3>
+                  <p className="theme-muted text-xs uppercase tracking-[0.34em]">Salary composition</p>
+                  <h3 className="theme-heading mt-3 text-xl font-semibold">Gross income mix</h3>
                 </div>
-                <div className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300">
+                <div className="theme-soft-surface rounded-full px-3 py-2 text-xs">
                   Monthly view
                 </div>
               </div>
 
               <div className="mt-6">
-                <SalaryDonut monthlyGross={breakdown.monthlyGross} items={composition} />
+                <SalaryDonut
+                  monthlyGross={breakdown.monthlyGross}
+                  items={composition}
+                  isLight={isLight}
+                />
               </div>
 
               <div className="mt-6 space-y-3">
@@ -419,7 +523,7 @@ export function SalaryCalculator() {
                   return (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-white/10 bg-white/[0.03] px-4 py-3"
+                      className="theme-soft-surface flex items-center justify-between gap-4 rounded-[1.2rem] px-4 py-3"
                     >
                       <div className="flex items-center gap-3">
                         <span
@@ -427,11 +531,17 @@ export function SalaryCalculator() {
                           style={{ backgroundColor: item.color }}
                         />
                         <div>
-                          <p className="text-sm font-medium text-white">{item.label}</p>
-                          <p className="text-xs text-slate-400">{formatPercent(percentage)}</p>
+                          <p
+                            className={`text-sm font-medium ${
+                              isLight ? "text-slate-950" : "text-white"
+                            }`}
+                          >
+                            {item.label}
+                          </p>
+                          <p className="theme-muted text-xs">{formatPercent(percentage)}</p>
                         </div>
                       </div>
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className={`text-sm font-semibold ${isLight ? "text-slate-950" : "text-slate-100"}`}>
                         {formatCurrency(item.value)}
                       </p>
                     </div>
@@ -441,9 +551,9 @@ export function SalaryCalculator() {
             </div>
 
             <div className="fade-up panel rounded-[2rem] p-6 sm:p-7" style={{ animationDelay: "240ms" }}>
-              <p className="text-xs uppercase tracking-[0.34em] text-slate-400">Tax comparison</p>
-              <h3 className="mt-3 text-xl font-semibold text-white">Annual deduction outlook</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
+              <p className="theme-muted text-xs uppercase tracking-[0.34em]">Tax comparison</p>
+              <h3 className="theme-heading mt-3 text-xl font-semibold">Annual deduction outlook</h3>
+              <p className="theme-copy mt-3 text-sm leading-6">
                 Lower bars are better here. The comparison uses standard deduction, rebate under
                 Section 87A, cess, and surcharge where applicable.
               </p>
@@ -455,6 +565,7 @@ export function SalaryCalculator() {
                   maxValue={maxTax}
                   color="#38bdf8"
                   subtitle={`In-hand ${formatCurrency(breakdown.oldRegime.monthlyInHand)} / month`}
+                  isLight={isLight}
                 />
                 <ComparisonBar
                   label="New regime"
@@ -462,6 +573,7 @@ export function SalaryCalculator() {
                   maxValue={maxTax}
                   color="#2563eb"
                   subtitle={`In-hand ${formatCurrency(breakdown.newRegime.monthlyInHand)} / month`}
+                  isLight={isLight}
                 />
               </div>
 
@@ -469,12 +581,13 @@ export function SalaryCalculator() {
                 <MetricTile
                   label="Selected regime tax"
                   value={formatCurrency(selectedResult.totalTax)}
-                  accent="text-white"
+                  isLight={isLight}
                 />
                 <MetricTile
                   label="Effective tax rate"
                   value={formatPercent(selectedResult.effectiveRate)}
                   accent="text-blue-300"
+                  isLight={isLight}
                 />
               </div>
             </div>
@@ -482,7 +595,7 @@ export function SalaryCalculator() {
 
           <div className="grid gap-5 lg:grid-cols-2">
             <div className="fade-up panel rounded-[2rem] p-6 sm:p-7" style={{ animationDelay: "300ms" }}>
-              <p className="text-xs uppercase tracking-[0.34em] text-slate-400">Regime cards</p>
+              <p className="theme-muted text-xs uppercase tracking-[0.34em]">Regime cards</p>
               <div className="mt-6 grid gap-4">
                 <RegimeCard
                   name="Old regime"
@@ -492,6 +605,7 @@ export function SalaryCalculator() {
                   selected={selectedRegime === "old"}
                   isBest={breakdown.bestRegime === "old"}
                   accent="#38bdf8"
+                  isLight={isLight}
                 />
                 <RegimeCard
                   name="New regime"
@@ -501,30 +615,37 @@ export function SalaryCalculator() {
                   selected={selectedRegime === "new"}
                   isBest={breakdown.bestRegime === "new"}
                   accent="#60a5fa"
+                  isLight={isLight}
                 />
               </div>
             </div>
 
             <div className="fade-up panel rounded-[2rem] p-6 sm:p-7" style={{ animationDelay: "360ms" }}>
-              <p className="text-xs uppercase tracking-[0.34em] text-slate-400">Calculation notes</p>
+              <p className="theme-muted text-xs uppercase tracking-[0.34em]">Calculation notes</p>
               <div className="mt-6 grid gap-4">
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
-                  <p className="text-sm font-medium text-white">Standard deduction applied</p>
-                  <p className="mt-3 text-sm leading-6 text-slate-300">
+                <div className="theme-soft-surface rounded-[1.5rem] p-5">
+                  <p className={`text-sm font-medium ${isLight ? "text-slate-950" : "text-white"}`}>
+                    Standard deduction applied
+                  </p>
+                  <p className="theme-copy mt-3 text-sm leading-6">
                     Old regime uses {formatCurrency(breakdown.oldRegime.standardDeduction)} and new
                     regime uses {formatCurrency(breakdown.newRegime.standardDeduction)}.
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
-                  <p className="text-sm font-medium text-white">Rebate logic</p>
-                  <p className="mt-3 text-sm leading-6 text-slate-300">
+                <div className="theme-soft-surface rounded-[1.5rem] p-5">
+                  <p className={`text-sm font-medium ${isLight ? "text-slate-950" : "text-white"}`}>
+                    Rebate logic
+                  </p>
+                  <p className="theme-copy mt-3 text-sm leading-6">
                     The app applies Section 87A rebate up to {formatCurrency(12_500)} under old
                     regime and {formatCurrency(60_000)} under new regime when eligible.
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
-                  <p className="text-sm font-medium text-white">Simplification</p>
-                  <p className="mt-3 text-sm leading-6 text-slate-300">
+                <div className="theme-soft-surface rounded-[1.5rem] p-5">
+                  <p className={`text-sm font-medium ${isLight ? "text-slate-950" : "text-white"}`}>
+                    Simplification
+                  </p>
+                  <p className="theme-copy mt-3 text-sm leading-6">
                     This version does not model HRA exemption, 80C/80D deductions, home-loan
                     benefits, or marginal relief. It is designed as a clean salary estimator.
                   </p>
